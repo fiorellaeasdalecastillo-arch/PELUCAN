@@ -1,4 +1,5 @@
-from tkinter import ttk
+import tkinter as tk
+from tkinter import Tk, messagebox, ttk
 
 class PaginaBase(ttk.Frame):
     """
@@ -125,7 +126,7 @@ class PaginaClientes(PaginaBase):
 
     def abrir_formulario_cliente(self):
         """Ventana modal con el formulario de Alta de Cliente"""
-        top = tk.Toplevel(self)
+        top = Tk.Toplevel(self)
         top.title("Nuevo Cliente")
         top.geometry("380x320")
         top.resizable(False, False)
@@ -263,7 +264,126 @@ class PaginaTurnos(PaginaBase):
     titulo = "Listado de Turnos"
     subtitulo = "Administración y búsqueda general de citas programadas en el sistema."
 
+    def construir_contenido(self):
+        frame_top = ttk.Frame(self, style="Contenido.TFrame")
+        frame_top.pack(fill="x", padx=24, pady=(0, 10))
+
+        ttk.Entry(frame_top, width=30).pack(side="left", padx=(0, 10))
+        ttk.Button(frame_top, text="Buscar").pack(side="left")
+
+        ttk.Button(frame_top, text="Eliminar").pack(side="right", padx=2)
+        ttk.Button(frame_top, text="Editar").pack(side="right", padx=2)
+        ttk.Button(frame_top, text="Nuevo", command=self.abrir_formulario_turno).pack(side="right", padx=2)
+
+        columnas = ("mascota", "servicio", "fecha", "hora", "estado", "obs")
+        self.tabla = ttk.Treeview(self, columns=columnas, show="headings", height=8)
+
+        self.tabla.heading("mascota", text="Mascota")
+        self.tabla.heading("servicio", text="Servicio")
+        self.tabla.heading("fecha", text="Fecha")
+        self.tabla.heading("hora", text="Hora")
+        self.tabla.heading("estado", text="Estado")
+        self.tabla.heading("obs", text="Observaciones")
+
+        datos_ejemplo = [
+            ("Luna (Caniche)", "Baño completo", "31/08/2026", "09:00", "Pendiente", "Ninguna"),
+            ("Bruno (Labrador)", "Corte + Baño", "31/08/2026", "10:30", "Confirmado", "Cuidado con piel sensible"),
+            ("Toby (Cocker)", "Corte de uñas", "31/08/2026", "11:45", "Confirmado", "Enojo fácil"),
+            ("Coco (Golden)", "Baño completo", "31/08/2026", "14:00", "Pendiente", "Secador lento"),
+        ]
+
+        for fila in datos_ejemplo:
+            self.tabla.insert("", "end", values=fila)
+
+        self.tabla.pack(fill="both", expand=True, padx=24, pady=(0, 20))
+
+    def abrir_formulario_turno(self):
+        """Ventana modal con el formulario de Nuevo Turno"""
+        top = tk.Toplevel(self)
+        top.title("Nuevo Turno")
+        top.geometry("420x400")
+        top.resizable(False, False)
+
+        ttk.Label(top, text="Nuevo Turno", font=("Segoe UI", 12, "bold")).pack(pady=10)
+
+        frame_form = ttk.Frame(top, padding=15)
+        frame_form.pack(fill="both", expand=True)
+
+        ttk.Label(frame_form, text="Cliente:").grid(row=0, column=0, sticky="w", pady=5)
+        combo_cliente = ttk.Combobox(frame_form, values=["Carlos Gómez", "Ana Ferreyra", "Marcos Díaz"], width=23)
+        combo_cliente.grid(row=0, column=1, pady=5)
+
+        ttk.Label(frame_form, text="Mascota:").grid(row=1, column=0, sticky="w", pady=5)
+        combo_mascota = ttk.Combobox(frame_form, values=["Luna (Caniche)", "Bruno (Labrador)", "Toby (Cocker)"], width=23)
+        combo_mascota.grid(row=1, column=1, pady=5)
+
+        ttk.Label(frame_form, text="Servicio:").grid(row=2, column=0, sticky="w", pady=5)
+        combo_servicio = ttk.Combobox(frame_form, values=["Baño completo", "Corte + Baño", "Corte de uñas", "Desparasitado"], width=23)
+        combo_servicio.grid(row=2, column=1, pady=5)
+
+        ttk.Label(frame_form, text="Fecha:").grid(row=3, column=0, sticky="w", pady=5)
+        entry_fecha = ttk.Entry(frame_form, width=25)
+        entry_fecha.insert(0, "31/08/2026")
+        entry_fecha.grid(row=3, column=1, pady=5)
+
+        ttk.Label(frame_form, text="Hora:").grid(row=4, column=0, sticky="w", pady=5)
+        entry_hora = ttk.Entry(frame_form, width=25)
+        entry_hora.insert(0, "10:00")
+        entry_hora.grid(row=4, column=1, pady=5)
+
+        ttk.Label(frame_form, text="Peluquero/a:").grid(row=5, column=0, sticky="w", pady=5)
+        combo_peluquero = ttk.Combobox(frame_form, values=["María Rodríguez", "Juan Pérez"], width=23)
+        combo_peluquero.grid(row=5, column=1, pady=5)
+
+        ttk.Label(frame_form, text="Observaciones:").grid(row=6, column=0, sticky="nw", pady=5)
+        txt_obs = tk.Text(frame_form, width=25, height=2)
+        txt_obs.grid(row=6, column=1, pady=5)
+
+        def guardar():
+            if combo_mascota.get() and combo_servicio.get():
+                self.tabla.insert("", "end", values=(
+                    combo_mascota.get(),
+                    combo_servicio.get(),
+                    entry_fecha.get(),
+                    entry_hora.get(),
+                    "Pendiente",
+                    txt_obs.get("1.0", "end-1c")
+                ))
+                top.destroy()
+
+        frame_botones = ttk.Frame(top)
+        frame_botones.pack(pady=10)
+        ttk.Button(frame_botones, text="Cancelar", command=top.destroy).pack(side="left", padx=5)
+        ttk.Button(frame_botones, text="Guardar", command=guardar).pack(side="left", padx=5)
+
 
 class PaginaServicios(PaginaBase):
     titulo = "Servicios"
     subtitulo = "Servicios ofrecidos por la peluquería."
+    def construir_contenido(self):
+        frame_top = ttk.Frame(self, style="Contenido.TFrame")
+        frame_top.pack(fill="x", padx=24, pady=(0, 10))
+
+        ttk.Button(frame_top, text="Eliminar").pack(side="right", padx=2)
+        ttk.Button(frame_top, text="Editar").pack(side="right", padx=2)
+        ttk.Button(frame_top, text="Nuevo Servicio").pack(side="right", padx=2)
+
+        columnas = ("nombre", "duracion", "precio")
+        self.tabla = ttk.Treeview(self, columns=columnas, show="headings", height=8)
+
+        self.tabla.heading("nombre", text="Nombre del Servicio")
+        self.tabla.heading("duracion", text="Duración Estimada (min)")
+        self.tabla.heading("precio", text="Precio Base ($)")
+
+        datos_ejemplo = [
+            ("Baño completo", "45 min", "$ 12.000,00"),
+            ("Corte + Baño", "60 min", "$ 18.000,00"),
+            ("Corte de uñas", "15 min", "$ 5.000,00"),
+            ("Desparasitado", "20 min", "$ 7.500,00"),
+        ]
+
+        for fila in datos_ejemplo:
+            self.tabla.insert("", "end", values=fila)
+
+        self.tabla.pack(fill="both", expand=True, padx=24, pady=(0, 20))
+        
